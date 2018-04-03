@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Olivier Guillaume" />
+
+<meta name="date" content="2018-03-28" />
+
+<title>GWAS pipeline manual</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">GWAS pipeline manual</h1>
+<h4 class="author"><em>Olivier Guillaume</em></h4>
+<h4 class="date"><em>2018-03-28</em></h4>
+
+
+
+<style>
+    body{
+        text-align: justify
+    }
+    h2{
+        border-bottom: 4px solid #ececec;
+    }
+    h3{
+        margin-left: 40px;
+    }
+    img{
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+<p>This document explains how to prepare the data and the basic usage of the mlmm.gwas package. Use <code>?functionName</code> in R console to get the complete documentation of a given function.</p>
+<p>The pipeline can be divised in 3 main steps:</p>
+<ul>
+<li>The MLMM where GWAS is carried correcting for population structure while including cofactors through a forward regression approach.</li>
+<li>Model selection where the model with the lowest eBIC is selected among the steps of the forward regression</li>
+<li>Effects estimation in the selected model</li>
+</ul>
+<p>Only the additive model is presented in this document. The pipeline also supports additive+dominace, female+male and female+male+interaction models. For more information on how to make the matrices for these models, read <a href="https://link.springer.com/article/10.1007/s00122-017-3003-4">Bonnafous et al. (2017)</a>.</p>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>This package includes a dataset with genotypes, phenotypes and kinship for different hybrids of sunflower.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    <span class="kw">library</span>(mlmm.gwas)
+    <span class="kw">data</span>(<span class="st">&quot;mlmm.gwas.AD&quot;</span>)
+    <span class="kw">ls</span>()
+<span class="co">#&gt; [1] &quot;K.add&quot;           &quot;K.dom&quot;           &quot;Xa&quot;              &quot;Xd&quot;             </span>
+<span class="co">#&gt; [5] &quot;floweringDateAD&quot;</span></code></pre></div>
+<div id="phenotypes-y" class="section level3">
+<h3>Phenotypes (Y)</h3>
+<p>Phenotypes must be put in a named vector. Names are the individuals’ names and values their phenotypes.</p>
+<p>The trait included in the dataset is the flowering date in °C.day.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    <span class="kw">head</span>(floweringDateAD)
+<span class="co">#&gt; SF173_SF326  SF160_PNS1 SF031_SF302 SF028_SF332 SF029_SF281  RA22_SF323 </span>
+<span class="co">#&gt;    1187.500    1200.520    1152.476    1130.149    1254.520    1215.293</span></code></pre></div>
+</div>
+<div id="genotypes-matrix-x" class="section level3">
+<h3>Genotypes matrix (X)</h3>
+<p>It’s a n by m matrix, where n is the number of individuals, and m the number of SNPs.</p>
+<p>Be sure to:</p>
+<ul>
+<li>impute missing genotypes (missing genotypes are not allowed).</li>
+<li>remove markers with low Minimum Allelic Frequency (MAF).</li>
+<li>remove redondant markers.</li>
+<li>center genotypes by markers.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    Xa[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">SNP1</th>
+<th align="right">SNP2</th>
+<th align="right">SNP3</th>
+<th align="right">SNP4</th>
+<th align="right">SNP5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SF173_SF326</td>
+<td align="right">1.3055556</td>
+<td align="right">0.4722222</td>
+<td align="right">-0.1944444</td>
+<td align="right">-0.1388889</td>
+<td align="right">-0.8611111</td>
+</tr>
+<tr class="even">
+<td>SF160_PNS1</td>
+<td align="right">-0.6944444</td>
+<td align="right">0.4722222</td>
+<td align="right">-0.1944444</td>
+<td align="right">-0.1388889</td>
+<td align="right">-0.8611111</td>
+</tr>
+<tr class="odd">
+<td>SF031_SF302</td>
+<td align="right">-0.6944444</td>
+<td align="right">0.4722222</td>
+<td align="right">-0.1944444</td>
+<td align="right">-0.1388889</td>
+<td align="right">0.1388889</td>
+</tr>
+<tr class="even">
+<td>SF028_SF332</td>
+<td align="right">-0.6944444</td>
+<td align="right">0.4722222</td>
+<td align="right">-0.1944444</td>
+<td align="right">-0.1388889</td>
+<td align="right">0.1388889</td>
+</tr>
+<tr class="odd">
+<td>SF029_SF281</td>
+<td align="right">-0.6944444</td>
+<td align="right">-0.5277778</td>
+<td align="right">-0.1944444</td>
+<td align="right">-0.1388889</td>
+<td align="right">1.1388889</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="kinship-matrix-k" class="section level3">
+<h3>“Kinship” matrix (K)</h3>
+<p>As K is normalized in the pipeline, you don’t need to do it yourself.</p>
+<p>So you can get it from centered X easily:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    ##You can get K from X with the following command line
+    ##We are not doing it here because the X matrix included in data(&quot;mlmm.gwas.AD&quot;)
+    ##is a subset of a larger matrix.
+    <span class="co">#K.add = Xa %*% t(Xa)</span>
+
+    K.add[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">SF173_SF326</th>
+<th align="right">SF160_PNS1</th>
+<th align="right">SF031_SF302</th>
+<th align="right">SF028_SF332</th>
+<th align="right">SF029_SF281</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SF173_SF326</td>
+<td align="right">213719.258</td>
+<td align="right">-2470.409</td>
+<td align="right">3375.313</td>
+<td align="right">-3872.576</td>
+<td align="right">-30046.548</td>
+</tr>
+<tr class="even">
+<td>SF160_PNS1</td>
+<td align="right">-2470.409</td>
+<td align="right">266025.924</td>
+<td align="right">51606.647</td>
+<td align="right">22635.758</td>
+<td align="right">-29448.215</td>
+</tr>
+<tr class="odd">
+<td>SF031_SF302</td>
+<td align="right">3375.313</td>
+<td align="right">51606.647</td>
+<td align="right">212842.369</td>
+<td align="right">16744.480</td>
+<td align="right">10089.508</td>
+</tr>
+<tr class="even">
+<td>SF028_SF332</td>
+<td align="right">-3872.576</td>
+<td align="right">22635.758</td>
+<td align="right">16744.480</td>
+<td align="right">225864.591</td>
+<td align="right">-9349.381</td>
+</tr>
+<tr class="odd">
+<td>SF029_SF281</td>
+<td align="right">-30046.548</td>
+<td align="right">-29448.215</td>
+<td align="right">10089.508</td>
+<td align="right">-9349.381</td>
+<td align="right">191078.647</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="y-x-and-k-harmonization" class="section level3">
+<h3>Y, X and K harmonization</h3>
+<p>Individuals and markers must be the sames and in the same order in Y, X and K.</p>
+</div>
+<div id="genetic-or-physical-map" class="section level3">
+<h3>Genetic or physical map</h3>
+<p>A genetic or physical map can be used for graphical representation of association (Manhattan plot).</p>
+<p>It’s a dataframe with 3 columns:</p>
+<ul>
+<li>Markers names</li>
+<li>Chromosomes or scaffolds names</li>
+<li>Positions (genetic or physical, any unit is allowed)</li>
+</ul>
+<p>Missing data are allowed.</p>
+<p>There is no map in the example dataset. We will still be alble to use the <code>manhattan.plot</code> function but the markers will be ordered by their line index in the X matrix, not by genetic or physical position.</p>
+</div>
+</div>
+<div id="association-detection-with-the-mlmm_allmodels-function" class="section level2">
+<h2>Association detection with the <em>mlmm_allmodels</em> function</h2>
+<p>The function <code>mlmm_allmodels</code> performs GWAS correcting for population structure while including cofactors through a forward regression approach.</p>
+<p>Several markers may be associated to a single QTL. The <code>mlmm_allmodels</code> function aims to solve this problem by selecting the closest SNP to each QTL using a forward regression approach. The association p-values of the SNPs are estimated. Then, the SNP with the lowest p-value is used as fixed effect (cofactor). This is repeated, adding one SNP to the fixed effects at each step, until most of the variance is explained or until the maximum number of iterations is reached.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    res_mlmm =<span class="st"> </span><span class="kw">mlmm_allmodels</span>(floweringDateAD, <span class="kw">list</span>(Xa), <span class="kw">list</span>(K.add))
+<span class="co">#&gt; null model done! pseudo-h= 0.433 </span>
+<span class="co">#&gt; step  1  done! pseudo-h= 0.226 model: Y ~ mu + SNP303 </span>
+<span class="co">#&gt; step  2  done! pseudo-h= 0 model: Y ~ mu + SNP303 + SNP404</span></code></pre></div>
+<p><code>mlmm_allmodels</code> returns a list with one element per step. Each element is a vector containing the association p-values of each marker.</p>
+<p>These p-values can be visualized as a Manhattan plot:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    <span class="kw">manhattan.plot</span>( res_mlmm )</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="model-selection" class="section level2">
+<h2>Model selection</h2>
+<p>It is necessary to select a model using a criterion to avoid overfitting. The criterion used here is the eBIC. The model with the lowest eBIC is selected.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    sel_XX =<span class="st"> </span><span class="kw">frommlmm_toebic</span>(<span class="kw">list</span>(Xa), res_mlmm)
+    res_eBIC =<span class="st"> </span><span class="kw">eBIC_allmodels</span>(floweringDateAD, sel_XX, <span class="kw">list</span>(K.add), <span class="kw">ncol</span>(Xa))
+    
+    res_eBIC</code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">BIC</th>
+<th align="right">ajout</th>
+<th align="right">eBIC_0.5</th>
+<th align="right">LogL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mu</td>
+<td align="right">283.1013</td>
+<td align="right">0.000000</td>
+<td align="right">283.1013</td>
+<td align="right">-134.6429</td>
+</tr>
+<tr class="even">
+<td>SNP303</td>
+<td align="right">268.7906</td>
+<td align="right">6.214608</td>
+<td align="right">275.0052</td>
+<td align="right">-125.1850</td>
+</tr>
+<tr class="odd">
+<td>SNP404</td>
+<td align="right">260.1300</td>
+<td align="right">11.734067</td>
+<td align="right">271.8641</td>
+<td align="right">-118.5521</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>In this example, the model with 2 fixed effects is selected.</p>
+</div>
+<div id="estimation-of-the-selected-snps-effects" class="section level2">
+<h2>Estimation of the selected SNPs effects</h2>
+<p>The selected SNPs effects can be estimated with the function <code>Estimation_allmodels</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    sel_XXclass =<span class="st"> </span><span class="kw">fromeBICtoEstimation</span>(sel_XX, res_eBIC)
+    effects =<span class="st"> </span><span class="kw">Estimation_allmodels</span>(floweringDateAD, sel_XXclass, <span class="kw">list</span>(K.add))
+    
+    effects</code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">BLUE</th>
+<th align="left">Tukey.Class</th>
+<th align="right">Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SNP303_00</td>
+<td align="right">0.00000</td>
+<td align="left">c</td>
+<td align="right">0.12</td>
+</tr>
+<tr class="even">
+<td>SNP303_01|10</td>
+<td align="right">1178.61198</td>
+<td align="left">a</td>
+<td align="right">0.48</td>
+</tr>
+<tr class="odd">
+<td>SNP303_11</td>
+<td align="right">1161.78472</td>
+<td align="left">b</td>
+<td align="right">0.40</td>
+</tr>
+<tr class="even">
+<td>SNP404_00</td>
+<td align="right">0.00000</td>
+<td align="left">b</td>
+<td align="right">0.51</td>
+</tr>
+<tr class="odd">
+<td>SNP404_01|10</td>
+<td align="right">-24.94805</td>
+<td align="left">a</td>
+<td align="right">0.43</td>
+</tr>
+<tr class="even">
+<td>SNP404_11</td>
+<td align="right">-28.38950</td>
+<td align="left">a</td>
+<td align="right">0.06</td>
+</tr>
+<tr class="odd">
+<td>mu</td>
+<td align="right">1228.20912</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>You can visualize the distributions of the phenotypes of the individuals according to their allelic class for a given SNP using the <code>genotypes.boxplot</code> function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    <span class="kw">genotypes.boxplot</span>(Xa, floweringDateAD, <span class="st">&quot;SNP303&quot;</span>, effects)</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>The colored symbols represent the Tukey’s classes. Different symbols mean that the means are significantly different.</p>
+</div>
+<div id="complete-example-script" class="section level2">
+<h2>Complete example script</h2>
+<p>For convenience, all of the example command lines are compiled below:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    <span class="kw">library</span>(mlmm.gwas)
+    <span class="kw">data</span>(<span class="st">&quot;mlmm.gwas.AD&quot;</span>)
+    
+    res_mlmm =<span class="st"> </span><span class="kw">mlmm_allmodels</span>(floweringDateAD, <span class="kw">list</span>(Xa), <span class="kw">list</span>(K.add))
+    
+    <span class="kw">manhattan.plot</span>( res_mlmm )
+    
+    sel_XX =<span class="st"> </span><span class="kw">frommlmm_toebic</span>(<span class="kw">list</span>(Xa), res_mlmm)
+    res_eBIC =<span class="st"> </span><span class="kw">eBIC_allmodels</span>(floweringDateAD, sel_XX, <span class="kw">list</span>(K.add), <span class="kw">ncol</span>(Xa))
+    
+    sel_XXclass =<span class="st"> </span><span class="kw">fromeBICtoEstimation</span>(sel_XX, res_eBIC)
+    effects =<span class="st"> </span><span class="kw">Estimation_allmodels</span>(floweringDateAD, sel_XXclass, <span class="kw">list</span>(K.add))
+    
+    <span class="kw">genotypes.boxplot</span>(Xa, floweringDateAD, <span class="st">&quot;SNP303&quot;</span>, effects)</code></pre></div>
+<p>You can also run the entire pipeline (without the figures plots) with the function <code>run_entire_gwas_pipeline</code>. This function runs internally the functions <code>mlmm_allmodels</code>, <code>frommlmm_toebic</code>, <code>eBIC_allmodels</code>, <code>fromeBICtoEstimation</code> and <code>Estimation_allmodels</code> and returns a list with the results of the mlmm, eBIC and effects estimation steps.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    results =<span class="st"> </span><span class="kw">run_entire_gwas_pipeline</span>(floweringDateAD, <span class="kw">list</span>(Xa), <span class="kw">list</span>(K.add))
+<span class="co">#&gt; null model done! pseudo-h= 0.433 </span>
+<span class="co">#&gt; step  1  done! pseudo-h= 0.226 model: Y ~ mu + SNP303 </span>
+<span class="co">#&gt; step  2  done! pseudo-h= 0 model: Y ~ mu + SNP303 + SNP404</span>
+    <span class="kw">names</span>(results)
+<span class="co">#&gt; [1] &quot;pval&quot;    &quot;eBic&quot;    &quot;effects&quot;</span></code></pre></div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

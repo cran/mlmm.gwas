@@ -1,0 +1,199 @@
+---
+title: "GWAS pipeline manual"
+author: "Olivier Guillaume"
+date: "`r Sys.Date()`"
+output:
+    rmarkdown::html_vignette:
+        df_print: kable
+    pdf_document:
+        df_print: kable
+vignette: |
+  %\VignetteIndexEntry{GWAS pipeline manual}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+<style>
+    body{
+        text-align: justify
+    }
+    h2{
+        border-bottom: 4px solid #ececec;
+    }
+    h3{
+        margin-left: 40px;
+    }
+    img{
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+
+
+```{r setup, include = FALSE}
+    knitr::opts_chunk$set(
+      collapse = TRUE,
+      comment = "#>"
+    )
+```
+
+This document explains how to prepare the data and the basic usage of the mlmm.gwas package. Use `?functionName` in R console to get the complete documentation of a given function.
+
+The pipeline can be divised in 3 main steps:
+
+* The MLMM where GWAS is carried correcting for population structure while including cofactors through a forward regression approach.
+* Model selection where the model with the lowest eBIC is selected among the steps of the forward regression
+* Effects estimation in the selected model
+
+Only the additive model is presented in this document. The pipeline also supports additive+dominace, female+male and female+male+interaction models. For more information on how to make the matrices for these models, read [Bonnafous et al. (2017)](https://link.springer.com/article/10.1007/s00122-017-3003-4).
+
+## Data
+
+This package includes a dataset with genotypes, phenotypes and kinship for different hybrids of sunflower.
+
+```{r data}
+    library(mlmm.gwas)
+    data("mlmm.gwas.AD")
+    ls()
+```
+
+```{r matrixFormat, include=FALSE}
+    # Change le formatage par défaut des matrices
+    # On le met ici pour pas qu'il soit visible quand on fait ls() ci dessus
+    knit_print.matrix <- function(x, ...){
+        knitr::knit_print(as.data.frame(x), ...)
+    }
+```
+
+### Phenotypes (Y)
+
+Phenotypes must be put in a named vector. Names are the individuals' names and values their phenotypes.
+
+The trait included in the dataset is the flowering date in °C.day.
+
+```{r floweringDateAD}
+    head(floweringDateAD)
+```
+
+### Genotypes matrix (X)
+It's a n by m matrix, where n is the number of individuals, and m the number of SNPs.
+
+Be sure to:
+
+* impute missing genotypes (missing genotypes are not allowed).
+* remove markers with low Minimum Allelic Frequency (MAF).
+* remove redondant markers.
+* center genotypes by markers.
+
+```{r X}
+    Xa[1:5,1:5]
+```
+
+### "Kinship" matrix (K)
+As K is normalized in the pipeline, you don't need to do it yourself.
+
+So you can get it from centered X easily:
+```{r K}
+    ##You can get K from X with the following command line
+    ##We are not doing it here because the X matrix included in data("mlmm.gwas.AD")
+    ##is a subset of a larger matrix.
+    #K.add = Xa %*% t(Xa)
+
+    K.add[1:5,1:5]
+```
+
+### Y, X and K harmonization
+
+Individuals and markers must be the sames and in the same order in Y, X and K.
+
+### Genetic or physical map
+A genetic or physical map can be used for graphical representation of association (Manhattan plot). 
+
+It's a dataframe with 3 columns:
+
+* Markers names
+* Chromosomes or scaffolds names
+* Positions (genetic or physical, any unit is allowed)
+
+Missing data are allowed.
+
+There is no map in the example dataset. We will still be alble to use the `manhattan.plot` function but the markers will be ordered by their line index in the X matrix, not by genetic or physical position.
+
+## Association detection with the *mlmm_allmodels* function
+
+The function `mlmm_allmodels` performs GWAS correcting for population structure while including cofactors through a forward regression approach.
+
+Several markers may be associated to a single QTL. The `mlmm_allmodels` function aims to solve this problem by selecting the closest SNP to each QTL using a forward regression approach. The association p-values of the SNPs are estimated. Then, the SNP with the lowest p-value is used as fixed effect (cofactor). This is repeated, adding one SNP to the fixed effects at each step, until most of the variance is explained or until the maximum number of iterations is reached.
+
+```{r mlmm}
+    res_mlmm = mlmm_allmodels(floweringDateAD, list(Xa), list(K.add))
+```
+
+`mlmm_allmodels` returns a list with one element per step. Each element is a vector containing the association p-values of each marker.
+
+These p-values can be visualized as a Manhattan plot:
+
+```{r manhattan, fig.height=5, fig.width=5}
+    manhattan.plot( res_mlmm )
+```
+
+## Model selection
+
+It is necessary to select a model using a criterion to avoid overfitting. The criterion used here is the eBIC. The model with the lowest eBIC is selected.
+
+```{r eBIC}
+    sel_XX = frommlmm_toebic(list(Xa), res_mlmm)
+    res_eBIC = eBIC_allmodels(floweringDateAD, sel_XX, list(K.add), ncol(Xa))
+    
+    res_eBIC
+```
+
+In this example, the model with `r which.min(res_eBIC[,"eBIC_0.5"])-1` fixed effects is selected.
+
+## Estimation of the selected SNPs effects
+
+The selected SNPs effects can be estimated with the function `Estimation_allmodels`
+
+```{r estimation}
+    sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC)
+    effects = Estimation_allmodels(floweringDateAD, sel_XXclass, list(K.add))
+    
+    effects
+```
+
+You can visualize the distributions of the phenotypes of the individuals according to their allelic class for a given SNP using the `genotypes.boxplot` function:
+
+```{r boxplot}
+    genotypes.boxplot(Xa, floweringDateAD, "SNP303", effects)
+```
+
+The colored symbols represent the Tukey's classes. Different symbols mean that the means are significantly different.
+
+## Complete example script
+
+For convenience, all of the example command lines are compiled below:
+
+```{r completeExample, eval=FALSE}
+    library(mlmm.gwas)
+    data("mlmm.gwas.AD")
+    
+    res_mlmm = mlmm_allmodels(floweringDateAD, list(Xa), list(K.add))
+    
+    manhattan.plot( res_mlmm )
+    
+    sel_XX = frommlmm_toebic(list(Xa), res_mlmm)
+    res_eBIC = eBIC_allmodels(floweringDateAD, sel_XX, list(K.add), ncol(Xa))
+    
+    sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC)
+    effects = Estimation_allmodels(floweringDateAD, sel_XXclass, list(K.add))
+    
+    genotypes.boxplot(Xa, floweringDateAD, "SNP303", effects)
+```
+
+You can also run the entire pipeline (without the figures plots) with the function `run_entire_gwas_pipeline`. This function runs internally the functions `mlmm_allmodels`, `frommlmm_toebic`, `eBIC_allmodels`, `fromeBICtoEstimation` and `Estimation_allmodels` and returns a list with the results of the mlmm, eBIC and effects estimation steps.
+
+```{r runEntirePipeline}
+    results = run_entire_gwas_pipeline(floweringDateAD, list(Xa), list(K.add))
+    names(results)
+```

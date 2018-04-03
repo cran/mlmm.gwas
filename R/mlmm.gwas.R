@@ -1,0 +1,26 @@
+#' mlmm.gwas
+#'
+#' Pipeline for GWAS using Multi Locus Mixed Model (MLMM).
+#'
+#' This is a fork of the MLMM / \href{https://github.com/Gregor-Mendel-Institute/MultLocMixMod}{MultLocMixMod} package by Vincent Segura and Bjarni J. Vilhjalmsson.
+#'
+#' The main differencies from the original package are:
+#' \itemize{
+#'     \item abandon of the multi-Bonferroni model selection
+#'     \item abandon of the backward model search
+#'     \item eBIC modified to be adapted to the rate between number of individuals and number of markers.
+#'     \item new models supported: additive+dominance, male+female and male+female+interaction. These models are described in \href{https://doi.org/10.1007/s00122-017-3003-4}{Bonnafous et al. (2017)}.
+#'     \item graphical functions: a new Manhattan plot and a boxplot representation of markers effects.
+#' }
+#'
+#' A \href{../doc/gwas-manual.html}{vignette} presents the usage of this package with the additive model.
+#'
+#' @references
+#'
+#' \href{https://doi.org/10.1007/s00122-017-3003-4}{Bonnafous, F., Fievet, G., Blanchet, N. et al. Theor Appl Genet (2018) 131: 319.}
+#'
+#' \href{https://doi.org/10.1038/ng.2314}{Segura V, Vilhjálmsson BJ, Platt A, Korte A, Seren Uuml, Long Q, et al. An efficient multi-locus mixed-model approach for genome-wide association studies in structured populations. Nat Genet. 2012;44:825–830.}
+#'
+#' @docType package
+#' @name mlmm.gwas
+NULL
