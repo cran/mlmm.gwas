@@ -149,7 +149,7 @@ It is necessary to select a model using a criterion to avoid overfitting. The cr
     res_eBIC
 ```
 
-In this example, the model with `r which.min(res_eBIC[,"eBIC_0.5"])-1` fixed effects is selected.
+In this example, the model with `r which.min(res_eBIC[,"eBIC_0.5"])-1` fixed effect`r ifelse(which.min(res_eBIC[,"eBIC_0.5"])-1 >= 2, "s", "")` is selected.
 
 ## Estimation of the selected SNPs effects
 

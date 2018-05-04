@@ -1,0 +1,11 @@
+mlmm.gwas v1.0.2 (2018/03/28)
+=============================
+
+Initial release on CRAN
+
+
+mlmm.gwas v1.0.3 (2018/05/03)
+=============================
+
+* Correction of a bug in eBIC_allmodels with FM or FMI models (Olivier Guillaume 2018/04/04).
+* Correction of a bug in the manhattan.plot function.

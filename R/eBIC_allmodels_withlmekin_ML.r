@@ -151,6 +151,7 @@ eBIC_allmodels<-function(Y,selec_XX,KK,nb.tests,cofs=NULL,female=NULL,male=NULL)
 
     #edit by Olivier Guillaume 2018/02 sorting individuals alphabeticaly in Y, selec_XX, KK because of an lmekib bug
     indsSorted = sort(names(Y))
+    i = match(indsSorted, names(Y))
     Y = Y[indsSorted]
     selec_XX = lapply(selec_XX, function(s_XX){
         m = as.matrix(s_XX[indsSorted,])
@@ -161,7 +162,10 @@ eBIC_allmodels<-function(Y,selec_XX,KK,nb.tests,cofs=NULL,female=NULL,male=NULL)
         KK = lapply(KK, function(k){
             k[indsSorted,indsSorted]
         })
-    }
+    }else{#edit by Olivier Guillaume 2018/04/04 this was forgotten
+		female = female[i]
+		male = male[i]
+	}
 
 nom.effet<-c("eff1","eff2","eff3")
 n<-length(Y)
@@ -250,7 +254,8 @@ colnames(design)<-c(colnames(X0),name.snp.col)
     XX <- design[,1:km]
     #print(xm)
       tryCatch({
-          res.lmekin<-coxme::lmekin(xm,data=data.frame(effet,Y, design,ind ), varlist=list(coxme::coxmeMlist(KK.proj) ) ,method="ML")
+          #TODO remove suppressWarning once lmekin is updated. ie when depreciated rBind is replaced by rbind. (Olivier GUillaume 2018/05/04)
+          suppressWarnings(res.lmekin<-coxme::lmekin(xm,data=data.frame(effet,Y, design,ind ), varlist=list(coxme::coxmeMlist(KK.proj) ) ,method="ML"))
           res.bic<- new.BIC.lmekin(res.lmekin,lambda,nb.tests,fix,XX)
           if(is.na(res.bic[1,1])){
             print(paste0("positive logML at step ",km))

@@ -98,9 +98,10 @@ manhattan.plot = function(res.mlmm, map=NULL, steps=1, hideCofactors = FALSE, ch
 	#EDIT 2018/03/27 CRAN check does not like pipeR '.'
     # mrksnames = lapply(res.mlmm, names) %>>% {Reduce(c, .)} %>>% {sub("^selec_","",.)} %>>% unique
 	mrksnames = unique(sub("^selec_","",Reduce(c, lapply(res.mlmm, names))))
-	
-	
-    map = rbind(map, data.frame(mkId = mrksnames[! mrksnames %in% map$mkId], chr = factor(0), pos = NA))
+
+	if( sum( ! mrksnames %in% map$mkId ) > 0 ){
+	    map = rbind(map, data.frame(mkId = mrksnames[! mrksnames %in% map$mkId], chr = factor(0), pos = NA))
+	}
 
     map$pos[map$chr == 0] = seq(0, max(map$pos, sum(map$chr == 0), na.rm=TRUE), length.out = sum(map$chr == 0))
 
