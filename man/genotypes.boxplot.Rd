@@ -7,7 +7,8 @@
 genotypes.boxplot(X, Y, markers = "all", effects = NULL,
   genotypes = c("00", "01|10", "11"), tukeyTextCol = NA, tukeyTextCex = 1,
   tukeyCol = c("#2ecc71", "#3498db", "#9b59b6", "#6c7a89", "#f2ca27",
-  "#e67e22", "#e74c3c", "#c08d57"), tukeyPch = 1:8, tukeyCex = 1, ...)
+  "#e67e22", "#e74c3c", "#c08d57"), tukeyPch = c(1, 3, 2, 4:8),
+  tukeyCex = 1, ...)
 }
 \arguments{
 \item{X}{A matrix where rownames are individuals names, colnames are markers names, and values are genotypes. Genotypes are encoded as allelic dosage (0, 1, 2) or as any numeric values     as long as the smallest and highest values correspond to homozygous and the mean of these smallest and highest values to heterozygous. Other values (imputated genotypes) will be rounded to the nearest.}

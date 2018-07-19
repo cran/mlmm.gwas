@@ -92,6 +92,15 @@
 #' @template examples.donotrun
 #' @export
 Estimation_allmodels<-function(Y,selec_XXclass,KK,cofs=NULL,female=NULL,male=NULL) {
+    #EDIT: adding special character support in marker names ( Olivier Guillaume 2018/07)
+    stopifnot(anyDuplicated(colnames(selec_XXclass)) == 0)
+    newnames =  gsub("[^a-zA-Z0-9]","_",colnames(selec_XXclass))
+    stopifnot(anyDuplicated(newnames) == 0)#different marker names become the same after special character being remplaced
+    XX_mrk_names = structure( colnames(selec_XXclass), names = newnames)
+    colnames(selec_XXclass) = newnames
+    #EDIT END
+
+
     stopifnot(!is.null(selec_XXclass))
     nom.effet<-c("eff1","eff2","eff3")
     n<-length(Y)
@@ -143,9 +152,9 @@ Estimation_allmodels<-function(Y,selec_XXclass,KK,cofs=NULL,female=NULL,male=NUL
     names(KK.proj)<-nom.effet[1:nb.effet]
     #build design matrix
     if(is.null(cofs)){
-      design = selec_XXclass
+      design = data.frame(X0,selec_XXclass)
     }else{
-      design<-data.frame(as.matrix(cofs),selec_XXclass)
+      design <- data.frame(X0,as.matrix(cofs),selec_XXclass)
     }
     # model lmekin
     #mod.random<-my.random.lmekin(names(effet))
@@ -173,7 +182,11 @@ Estimation_allmodels<-function(Y,selec_XXclass,KK,cofs=NULL,female=NULL,male=NUL
     	}
     #stopifnot(length(id)==0)
     #change names of blue ... put an  "_" between the name of SNP and the factor level
-      names(blue) = paste0(substr(names(blue),1,nchar(names(blue))-2),"_",substr(names(blue),nchar(names(blue))-1, nchar(names(blue))))
+      #EDIT: the cofactors names were not properly handle (Olivier Guillaume 2018/07)
+      #names(blue) = paste0(substr(names(blue),1,nchar(names(blue))-2),"_",substr(names(blue),nchar(names(blue))-1, nchar(names(blue))))
+      iNames = ! names(blue) %in% colnames(cofs)
+      names(blue)[iNames] = paste0(substr(names(blue)[iNames],1,nchar(names(blue)[iNames])-2),"_",substr(names(blue)[iNames],nchar(names(blue)[iNames])-1, nchar(names(blue)[iNames])))
+
       names(blue) = gsub("01[|]_10", "_01|10", names(blue))
       names(blue)[1] = "mu"
       varcov.blue = res.lmekin$var
@@ -189,14 +202,14 @@ Estimation_allmodels<-function(Y,selec_XXclass,KK,cofs=NULL,female=NULL,male=NUL
     	s.levels<-levels(as.factor(selec_XXclass[,which(colnames(selec_XXclass)==s)]))
     	names.s.levels<-paste0(s,"_",s.levels)
     	res<-setdiff(names.s.levels,names(blue)[id])
-    #compacte levels
+        #compacte levels
     		if(length(res)>1) {
-    		lev<-unlist(lapply(res,function(xx){strsplit(xx,paste0(s,"_") )[[1]][2]}))
-    		compacte.lev<-do.call(paste,c(lev,list(sep="+")))
-    		res<-paste0(s,"_",compacte.lev)
+        		lev<-unlist(lapply(res,function(xx){strsplit(xx,paste0(s,"_") )[[1]][2]}))
+        		compacte.lev<-do.call(paste,c(lev,list(sep="+")))
+        		res<-paste0(s,"_",compacte.lev)
     		}
     	res
-    	}))
+    }))
 
     #complete blue and varblue for "missing" levels, put at 0 as for asreml but with compacted levels
     blue.complete<-c(blue,rep(0,length(missing.levels)))
@@ -270,5 +283,15 @@ Estimation_allmodels<-function(Y,selec_XXclass,KK,cofs=NULL,female=NULL,male=NUL
       RES<-RES[,-1]
       rownames(RES)<-names
       colnames(RES)<-c("BLUE","Tukey.Class","Frequency")
+
+
+    #EDIT: adding special character support in marker names ( Olivier Guillaume 2018/07)
+    i = ! rownames(RES) %in% c("mu", colnames(cofs))
+    rownames(RES)[i] = paste0(XX_mrk_names[sub("^(.+)_(.+)$","\\1",rownames(RES)[i])],sub("^(.+)_(.+)$","_\\2",rownames(RES)[i]))
+    #EDIT END
+
+    #EDIT: reordering the markers so the order will be the same as in selec_XXclass (Olivier Guillaume 2018/07)
+    RES = RES[order(match(sub("^(.+)_(.+)$","\\1",rownames(RES)), colnames(selec_XXclass)), na.last = FALSE),]
+
     RES
 }

@@ -1,6 +1,6 @@
 ###adapted from MLMM - Multi-Locus Mixed Model
 #' @import stats
-#' @import graphics
+#' @import grDevices
 
 ##############################################################################################################################################
 # SET OF FUNCTIONS TO CARRY GWAS CORRECTING FOR POPULATION STRUCTURE WHILE INCLUDING
@@ -159,7 +159,10 @@ mixedModelWithSommer = function(Y, KK.proj, effet, cof=NULL){
     data = data.frame(id=names(Y), Y=as.vector(Y), effet, cof)
     random = formula(paste("~",paste0("g(",names(KK.proj),")",collapse="+")))
     fixed = formula(sub("mu", "1", paste("Y~",paste(colnames(cof), collapse = "+"))))
-    sommer::mmer2(fixed, random, data=data, G=KK.proj, silent=TRUE)
+    currentDevice = dev.cur()
+    res = sommer::mmer2(fixed, random, data=data, G=KK.proj, silent=TRUE)#NOTE: opens an unwanted empty graphical window (probably a bug of sommer).
+    if(dev.cur() != 1 && dev.cur() != currentDevice) dev.off()#EDIT: close the unwanted window. temporary fix, it would be better to not opens this window in the first time (OG 2018/07/17)
+    res
 }
 ###################################################################
 #' @title Multi-Locus Mixed-Model
@@ -207,6 +210,17 @@ mlmm_allmodels<-function(Y, XX, KK, nbchunks=2, maxsteps=20, cofs=NULL, female=N
     m<-ncol(XX[[1]])
     for(ki in 1:nb.effet) {
         stopifnot(nrow(XX[[ki]]) == n)
+        #EDIT OG 2018/07/10: adding support of marker names in the form "chr3:10179093_T/G" (incompatible when used directly in formulas)
+        stopifnot(anyDuplicated(colnames(XX[[ki]])) == 0)
+        if(ki == 1){
+            newnames =  gsub("[^a-zA-Z0-9]","_",colnames(XX[[ki]]))
+            stopifnot(anyDuplicated(newnames) == 0)#different marker names become the same after special character being remplaced
+            XX_mrk_names = structure( colnames(XX[[ki]]), names = newnames)
+        }else{
+            stopifnot( colnames(XX[[ki]]) != colnames(XX[[1]]) )#checking if the markers are the same in the different matrices
+        }
+        colnames(XX[[ki]]) = newnames
+        #EDIT END
     }
     if(nb.effet > 1){
         for(ki in 2:nb.effet) {
@@ -220,6 +234,7 @@ mlmm_allmodels<-function(Y, XX, KK, nbchunks=2, maxsteps=20, cofs=NULL, female=N
     for(ki in 1:nb.effet) {
         effet[[ki]]<-ind
     }
+
     stopifnot(length(KK) == nb.effet)
     if(!is.null(female) & !is.null(male) ) {
         if(is.factor(female)==FALSE) female<-as.factor(female)
@@ -245,11 +260,14 @@ mlmm_allmodels<-function(Y, XX, KK, nbchunks=2, maxsteps=20, cofs=NULL, female=N
     colnames(X0)<-"mu"
     #kinship normalisation
     KK.norm<-list()
+
+
     for(ki in 1:nb.effet){
         n.temp<-nb.level.byeffect[ki]
         cst<-(n.temp-1)/sum((diag(n.temp)-matrix(1,n.temp,n.temp)/n.temp)*KK[[ki]] )
         KK.norm[[ki]]<-cst*KK[[ki]]
     }
+
     #contribution to individual covariances
     KK.cov<-list()
     for(ki in 1:nb.effet){
@@ -277,7 +295,6 @@ mlmm_allmodels<-function(Y, XX, KK, nbchunks=2, maxsteps=20, cofs=NULL, female=N
     cof_fwd<-list()
     if(is.null(cofs) ) {cof_fwd[[1]]<-X0 } else{ cof_fwd[[1]]<-cbind(X0,as.matrix(cofs) )}
     mod_fwd<-list()
-
     mod_fwd[[1]] = mixedModelWithSommer(Y, KK.proj, effet, cof_fwd[[1]])
 
     herit_fwd <- list()
@@ -299,6 +316,7 @@ mlmm_allmodels<-function(Y, XX, KK, nbchunks=2, maxsteps=20, cofs=NULL, female=N
     pval_cof_fwd[[1]]<-NULL
     pval_cof_fwd[[2]]<-NULL
     cat('null model done! pseudo-h=',round(herit_fwd[[1]],3),'\n')
+
     #
     for (i in 2:(maxsteps)) {
         if (herit_fwd[[i-1]] < 0.01) break else {
@@ -339,6 +357,18 @@ mlmm_allmodels<-function(Y, XX, KK, nbchunks=2, maxsteps=20, cofs=NULL, female=N
         pval[[i]]<-c(pval_cof_fwd[[i]],pval[[i]])
     }
     #end of function
+
+    #EDIT putting back the markers names with special caracters
+    if(length(pval)>=2){
+        for(i in 2:length(pval)){
+            isSelec = grepl('^selec_',names(pval[[i]]))
+            newnames = XX_mrk_names[ sub("^selec_","",names(pval[[i]])) ]
+            newnames = ifelse(isSelec, paste0("selec_",newnames), newnames)
+            names(pval[[i]]) = newnames
+        }
+    }
+
+
     pval
 }
 

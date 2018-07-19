@@ -141,6 +141,19 @@ lambda.calc<-function(n,nb.tests){
 #' @template examples.donotrun
 #' @export
 eBIC_allmodels<-function(Y,selec_XX,KK,nb.tests,cofs=NULL,female=NULL,male=NULL) {
+    #EDIT: adding special character support in marker names ( Olivier Guillaume 2018/07)
+    for(ki in 1:length(selec_XX)) {
+        stopifnot(anyDuplicated(colnames(selec_XX[[ki]])) == 0)
+        if(ki == 1){
+            newnames =  gsub("[^a-zA-Z0-9]","_",colnames(selec_XX[[ki]]))
+            stopifnot(anyDuplicated(newnames) == 0)#different marker names become the same after special character being remplaced
+            XX_mrk_names = structure( colnames(selec_XX[[ki]]), names = newnames)
+        }else{
+            stopifnot( colnames(selec_XX[[ki]]) != colnames(selec_XX[[1]]) )#checking if the markers are the same in the different matrices
+        }
+        colnames(selec_XX[[ki]]) = newnames
+        #EDIT END
+    }
 
     #edit by Olivier Guillaume 2018/02 centering and scaling Y because lmekins doesn't works well otherwise
     Ys = as.vector(scale(Y))
@@ -272,6 +285,10 @@ colnames(design)<-c(colnames(X0),name.snp.col)
 colnames(result.eBIC) <- c("BIC","ajout",paste("eBIC",lambda,sep="_"),"LogL")
 fix.name<-do.call(paste, c(as.list(colnames(design)[1:fix],sep="+")))
 rownames(result.eBIC) <- c(fix.name,colnames(selec_XX[[1]]))
+
+#EDIT: adding special character support in marker names (Olivier Guillaume )
+rownames(result.eBIC) = ifelse( rownames(result.eBIC) %in% names(XX_mrk_names), XX_mrk_names[rownames(result.eBIC)], rownames(result.eBIC))
+
 #end of function
 result.eBIC
 }

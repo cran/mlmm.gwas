@@ -12,7 +12,7 @@
 
 <meta name="author" content="Olivier Guillaume" />
 
-<meta name="date" content="2018-05-04" />
+<meta name="date" content="2018-07-19" />
 
 <title>GWAS pipeline manual</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">GWAS pipeline manual</h1>
 <h4 class="author"><em>Olivier Guillaume</em></h4>
-<h4 class="date"><em>2018-05-04</em></h4>
+<h4 class="date"><em>2018-07-19</em></h4>
 
 
 
@@ -375,35 +375,35 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </thead>
 <tbody>
 <tr class="odd">
-<td>SNP303_00</td>
-<td align="right">0.000</td>
-<td align="left">c</td>
-<td align="right">0.1090909</td>
-</tr>
-<tr class="even">
-<td>SNP303_01|10</td>
-<td align="right">1164.893</td>
-<td align="left">a</td>
-<td align="right">0.4818182</td>
-</tr>
-<tr class="odd">
-<td>SNP303_11</td>
-<td align="right">1148.923</td>
-<td align="left">b</td>
-<td align="right">0.4090909</td>
-</tr>
-<tr class="even">
 <td>mu</td>
-<td align="right">1215.446</td>
+<td align="right">1148.92349</td>
 <td align="left">NA</td>
 <td align="right">NA</td>
+</tr>
+<tr class="even">
+<td>SNP303_00</td>
+<td align="right">66.52243</td>
+<td align="left">a</td>
+<td align="right">0.1090909</td>
+</tr>
+<tr class="odd">
+<td>SNP303_01|10</td>
+<td align="right">15.96944</td>
+<td align="left">b</td>
+<td align="right">0.4818182</td>
+</tr>
+<tr class="even">
+<td>SNP303_11</td>
+<td align="right">0.00000</td>
+<td align="left">c</td>
+<td align="right">0.4090909</td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>You can visualize the distributions of the phenotypes of the individuals according to their allelic class for a given SNP using the <code>genotypes.boxplot</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">    <span class="kw">genotypes.boxplot</span>(Xa, floweringDateAD, <span class="st">&quot;SNP303&quot;</span>, effects)</code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
 <p>The colored symbols represent the Tukey’s classes. Different symbols mean that the means are significantly different.</p>
 </div>
 <div id="complete-example-script" class="section level2">

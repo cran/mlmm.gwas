@@ -34,7 +34,10 @@ selec_XXclass<-NULL
 if(il>1) {selec_XX<-list()
 	snp.selec<-rownames(res.eBIC)[2:il]
 	for(ii in 1:nb.effet){
-		selec_XX[[ii]]<-XX[[ii]][,colnames(XX[[ii]])%in%snp.selec]
+		#EDIT by Olivier Guillaume (2018/07/17): conserve order of eBIC table
+	    #selec_XX[[ii]]<-XX[[ii]][,colnames(XX[[ii]])%in%snp.selec]
+	    selec_XX[[ii]]<-XX[[ii]][,match(snp.selec, colnames(XX[[ii]]))]
+
 		selec_XX[[ii]] = as.matrix(selec_XX[[ii]]) ## add by Prune 15.06.16
 		}
 	for(ii in 1:nb.effet){ stopifnot( ncol(selec_XX[[ii]]) == length(snp.selec) ) }

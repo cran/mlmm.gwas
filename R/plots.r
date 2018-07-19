@@ -2,6 +2,8 @@
 ### Gaphical functions for the GWAS pipeline ###
 ################################################
 
+#' @import graphics
+
 ##### Manhattan Plot ##########################################################
 #
 ### Function description:
@@ -132,8 +134,11 @@ manhattan.plot = function(res.mlmm, map=NULL, steps=1, hideCofactors = FALSE, ch
 
     rownames(map) = map$mkId
 
+    #EDIT : alphanumrerical order instead of alphabetical (Olivier Guillaume 2018/06/27)
+    #chrs = sort(unique(as.character(map$chr)))
+    chrs = sortAlphaNumeric(unique(as.character(map$chr)))
 
-    chrs = sort(unique(as.character(map$chr)))
+
     if("0" %in% chrs){
         chrs = c(chrs[chrs != 0], "0") #chr 0 à la fin
     }
@@ -271,7 +276,7 @@ genotypes.boxplot = function(X,
                              tukeyTextCol = NA,
                              tukeyTextCex = 1,
                              tukeyCol = c("#2ecc71", "#3498db", "#9b59b6", "#6c7a89", "#f2ca27", "#e67e22", "#e74c3c", "#c08d57"),
-                             tukeyPch = 1:8,
+                             tukeyPch = c(1,3,2,4:8),
                              tukeyCex = 1,
                              ...
                              ){
@@ -303,15 +308,26 @@ genotypes.boxplot = function(X,
         x = x / max(x) * 2
         x = x + (x %% 1 == 0.5) * runif(length(x)) * 1e-3 #0.5 and 1.5 are randomly put to one of the two possible genotype
         x = round(x) #infered alleles are put in the most likely genotype
-        x = as.factor(genotypes[x+1])
+        x = factor(genotypes[x+1], levels = c("00","01|10","11"))
 
         #plot
         boxplot(Y~x, main = marker, ...)
 
         if(!is.null(effects)){
-            tukeyClasses = effects[paste0(markers, "_", c("00","01|10","11")),"Tukey.Class"]
+            tukeyClasses = effects[paste0(marker, "_", c("00","01|10","11")),"Tukey.Class"]
             means = tapply(Y, x, mean)[genotypes]
-            points(1:3, means, col = tukeyCol[tukeyClasses], pch = tukeyPch[tukeyClasses], cex = tukeyCex)
+
+            #EDIT adding double class support (ie "ab" for example)
+            names(tukeyClasses) = names(means)
+            tukeyClasses = as.factor(unlist(sapply(1:length(tukeyClasses), function(i){
+                tc = unlist(strsplit(as.character(tukeyClasses[i]), ""))
+                names(tc) = rep(names(tukeyClasses[i]),length(tc))
+                tc
+            })))
+            means = means[names(tukeyClasses)]
+            xtc = match(names(means), c("00","01|10","11"))
+
+            points(xtc, means, col = tukeyCol[tukeyClasses], pch = tukeyPch[tukeyClasses], cex = tukeyCex)
             if(!is.na(tukeyTextCol)) text(1:3, means, tukeyClasses, cex = tukeyTextCex, col = tukeyTextCol)
         }
     }

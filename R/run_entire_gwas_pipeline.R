@@ -28,11 +28,11 @@ run_entire_gwas_pipeline = function(Y, XX, KK, nbchunks=2, maxsteps=20, cofs=NUL
     nb.snp = ncol(XX[[1]])
     res$eBic = eBIC_allmodels(Y, sel.XX, KK, nb.snp, cofs, female, male)
 
-    if(which.min(res$eBic[,"eBIC_0.5"]) == 1){
+    if(which.min(res$eBic[, grep("eBIC_", colnames(res$eBic))[1]]) == 1){#nb. the name of the column of the eBIC is variable, ie. eBIC_[lambda]
         warning("The model with the lowest eBic is the null model (without markers used as fixed effects).")
     }else{
         sel.XXclass = fromeBICtoEstimation(sel.XX, res$eBic)
-        res$effects = Estimation_allmodels(Y, sel.XXclass, KK)
+        res$effects = Estimation_allmodels(Y, sel.XXclass, KK, cofs, female, male)
     }
 
     res

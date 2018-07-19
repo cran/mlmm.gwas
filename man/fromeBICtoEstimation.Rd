@@ -39,7 +39,7 @@ sel_XX <- frommlmm_toebic(XX, res_mlmm)
 res.eBIC <- eBIC_allmodels(floweringDateAD, sel_XX, KK, ncol(Xa))
 
 # Effects estimations with the selected model
-sel_XXclass <- fromeBICtoEstimation(XX, res.eBIC)
+sel_XXclass <- fromeBICtoEstimation(sel_XX, res.eBIC)
 eff.estimations <- Estimation_allmodels(floweringDateAD, sel_XXclass, KK)
 genotypes.boxplot(Xa, floweringDateAD, effects = eff.estimations)
 }
