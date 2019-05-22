@@ -149,7 +149,7 @@ eBIC_allmodels<-function(Y,selec_XX,KK,nb.tests,cofs=NULL,female=NULL,male=NULL)
             stopifnot(anyDuplicated(newnames) == 0)#different marker names become the same after special character being remplaced
             XX_mrk_names = structure( colnames(selec_XX[[ki]]), names = newnames)
         }else{
-            stopifnot( colnames(selec_XX[[ki]]) != colnames(selec_XX[[1]]) )#checking if the markers are the same in the different matrices
+            stopifnot( colnames(selec_XX[[ki]]) == colnames(selec_XX[[1]]) )#checking if the markers are the same in the different matrices
         }
         colnames(selec_XX[[ki]]) = newnames
         #EDIT END

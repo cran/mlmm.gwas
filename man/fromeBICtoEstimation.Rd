@@ -4,7 +4,7 @@
 \alias{fromeBICtoEstimation}
 \title{Helper function that create the selec_XXclass argument of the Estimation_allmodels function}
 \usage{
-fromeBICtoEstimation(XX, res.eBIC)
+fromeBICtoEstimation(XX, res.eBIC, res.threshold)
 }
 \arguments{
 \item{XX}{A list of length one, two or three matrices depending on the model. Matrices are n by m matrix, where n=number of individuals, m=number of SNPs, with rownames(X)=individual names, and colnames(X)=SNP names.
@@ -18,9 +18,11 @@ fromeBICtoEstimation(XX, res.eBIC)
 - female+male+interaction: three matrices with the female first, the male then the interaction}
 
 \item{res.eBIC}{output of the \code{\link{eBIC_allmodels}} function}
+\item{res.threshold}{output of the \code{\link{threshold_allmodels}} function}
+
 }
 \description{
-Function that create the selec_XXclass argument of the \code{\link{Estimation_allmodels}} function from the output of the \code{\link{eBIC_allmodels}} function.
+Function that create the selec_XXclass argument of the \code{\link{Estimation_allmodels}} function from the output of the \code{\link{eBIC_allmodels}} function or from the output of the \code{\link{threshold_allmodels}} function.
 }
 \examples{
 ### Additive model ###

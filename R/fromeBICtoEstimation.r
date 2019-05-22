@@ -13,7 +13,7 @@
 #' @seealso \code{\link{eBIC_allmodels}} \code{\link{Estimation_allmodels}}
 #' @template examples.donotrun
 #' @export
-fromeBICtoEstimation<-function(XX,res.eBIC){
+fromeBICtoEstimation<-function(XX,res.eBIC,res.threshold){
 ##########################################
 #GENOTYPE  XX: a list of length one or two matrices depending on the models
 # matrices are n by m matrix, where n=number of individuals, m=number of SNPs,
@@ -31,8 +31,16 @@ eBIC<-res.eBIC[,3]
 il<-which( eBIC==min(eBIC, na.rm = TRUE ))# ,na.rm added by lgody on 2018/01/23
 snp.selec<-NULL
 selec_XXclass<-NULL
+
+if(length(res.threshold)>1){
+il_thres <- length(res.threshold[,1])
+if((il-1)>il_thres){snp.selec <- rownames(res.eBIC)[2:il]}else{#condition to select SNP
+snp.selec <- as.vector(res.threshold[,1])}
+}else{snp.selec <- rownames(res.eBIC)[2:il]}
+
+il=length(snp.selec)+1
+
 if(il>1) {selec_XX<-list()
-	snp.selec<-rownames(res.eBIC)[2:il]
 	for(ii in 1:nb.effet){
 		#EDIT by Olivier Guillaume (2018/07/17): conserve order of eBIC table
 	    #selec_XX[[ii]]<-XX[[ii]][,colnames(XX[[ii]])%in%snp.selec]
@@ -73,6 +81,24 @@ if(il>1) {selec_XX<-list()
 		}))
 		colnames(selec_XXclass)<-snp.selec
 	}
+	if(nb.effet == 3){
+	minusfreq<-matrix(NA,ncol=length(snp.selec),nrow=nb.effet)
+		for(ii in 1:nb.effet){
+			minusfreq[ii,]<-apply(selec_XX[[ii]],2,min)
+			}  #the original codage is (0,1), 0=XRQ
+		selec_XX_t<-list()
+		for(ii in 1:nb.effet){
+		selec_XX_t[[ii]]<-selec_XX[[ii]]-matrix(rep( minusfreq[ii,],nrow(selec_XX[[1]]) ),ncol=length(snp.selec),nrow=nrow(selec_XX[[1]]),byrow=TRUE)
+		}
+		selec_XXclass<-data.frame(lapply(1:length(snp.selec) ,function(ic){
+			trans<-unlist(lapply(1:nrow(selec_XX[[1]]),function(il){
+				paste0( selec_XX_t[[1]][il,ic],selec_XX_t[[2]][il,ic] )
+				}))
+			trans<-as.factor(trans)
+		}))
+		colnames(selec_XXclass)<-snp.selec
+	}
+	
 }
 #end of function
 selec_XXclass

@@ -16,6 +16,7 @@ The main differencies from the original package are:
     \item abandon of the multi-Bonferroni model selection
     \item abandon of the backward model search
     \item eBIC modified to be adapted to the rate between number of individuals and number of markers.
+    \item function added to select significant SNP according to a p-value threshold at each mlmm step
     \item new models supported: additive+dominance, male+female and male+female+interaction. These models are described in \href{https://doi.org/10.1007/s00122-017-3003-4}{Bonnafous et al. (2017)}.
     \item graphical functions: a new Manhattan plot and a boxplot representation of markers effects.
 }

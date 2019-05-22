@@ -5,7 +5,7 @@
 \title{Multi-Locus Mixed-Model}
 \usage{
 mlmm_allmodels(Y, XX, KK, nbchunks = 2, maxsteps = 20, cofs = NULL,
-  female = NULL, male = NULL)
+  female = NULL, male = NULL, threshold=NULL)
 }
 \arguments{
 \item{Y}{A numeric named vector where the names are individuals' names and the values their phenotype. The names of Y will be matched to the row names of X.}
@@ -39,6 +39,7 @@ mlmm_allmodels(Y, XX, KK, nbchunks = 2, maxsteps = 20, cofs = NULL,
 \item{female}{A factor of levels female names and length n, only for the last two models}
 
 \item{male}{A factor of levels male names and length n, only for the last two models}
+\item{threshold}{a value to declare the significant p value. The default value is Bonferroni 0.05}
 }
 \value{
 a list with one element per step of the forward approach. Each element of this list is a named vector of p-values, the names are the names of the markers, with "selec_" as prefix for the markers used as fixed effects.
@@ -71,8 +72,11 @@ manhattan.plot(res_mlmm)
 sel_XX <- frommlmm_toebic(XX, res_mlmm)
 res.eBIC <- eBIC_allmodels(floweringDateAD, sel_XX, KK, ncol(Xa))
 
+# Marker selection
+res.threshold <- threshold_allmodels(threshold=NULL, res_mlmm)
+
 # Effects estimations with the selected model
-sel_XXclass <- fromeBICtoEstimation(sel_XX, res.eBIC)
+sel_XXclass <- fromeBICtoEstimation(sel_XX, res.eBIC, res.threshold)
 eff.estimations <- Estimation_allmodels(floweringDateAD, sel_XXclass, KK)
 genotypes.boxplot(Xa, floweringDateAD, effects = eff.estimations)
 
@@ -91,13 +95,14 @@ sel_XX <- frommlmm_toebic(XX, res_mlmm)
 res.eBIC <- eBIC_allmodels(floweringDateAD, sel_XX, KK, ncol(Xa))
 #the selected model is the null model
 
+# Marker selection 
+res.threshold <- threshold_allmodels(threshold=NULL, res_mlmm)
 
 ### Data for female+male and female+male+interaction
 
 data("mlmm.gwas.FMI")
 
 ### Female+Male model
-
 
 XX = list(Xf, Xm)
 KK = list(K.female, K.male)
@@ -110,6 +115,9 @@ manhattan.plot(res_mlmm)
 sel_XX <- frommlmm_toebic(XX, res_mlmm)
 res.eBIC <- eBIC_allmodels(floweringDateFMI, sel_XX, KK, ncol(Xf), female = female, male = male)
 #the selected model is the null model
+
+# Marker selection 
+res.threshold <- threshold_allmodels(threshold=NULL, res_mlmm)
 
 
 ### Female+Male+Interaction model
@@ -125,6 +133,10 @@ manhattan.plot(res_mlmm)
 sel_XX <- frommlmm_toebic(XX, res_mlmm)
 res.eBIC <- eBIC_allmodels(floweringDateFMI, sel_XX, KK, ncol(Xf), female = female, male = male)
 #the selected model is the null model
+
+# Marker selection 
+res.threshold <- threshold_allmodels(threshold=NULL, res_mlmm)
+
 }
 }
 \seealso{

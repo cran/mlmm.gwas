@@ -5,7 +5,7 @@
 \title{MLMM, model selection and effects estimation}
 \usage{
 run_entire_gwas_pipeline(Y, XX, KK, nbchunks = 2, maxsteps = 20,
-  cofs = NULL, female = NULL, male = NULL)
+  cofs = NULL, female = NULL, male = NULL,threshold=NULL)
 }
 \arguments{
 \item{Y}{A numeric named vector where the names are individuals' names and the values their phenotype. The names of Y will be matched to the row names of X.}
@@ -39,12 +39,15 @@ run_entire_gwas_pipeline(Y, XX, KK, nbchunks = 2, maxsteps = 20,
 \item{female}{A factor of levels female names and length n, only for the last two models}
 
 \item{male}{A factor of levels male names and length n, only for the last two models}
+
+\item{threshold}{a value to declare the significant p value. The default value is Bonferroni 0.05}
 }
 \value{
 A named list with 2 or 3 elements:
 \itemize{
     \item pval: the return value of \code{\link{mlmm_allmodels}}
     \item eBic: the return value of \code{\link{eBIC_allmodels}}
+    \item threshold: the return value of \code{\link{threshold_allmodels}}
     \item effects: the return value of \code{\link{Estimation_allmodels}}, only if there is at least one marker in the model selected by lowest eBIC.
 }
 }
@@ -54,6 +57,7 @@ Internaly run functions of the mlmm.gwas package:
   \item \code{\link{mlmm_allmodels}} (GWAS)
   \item \code{\link{frommlmm_toebic}}
   \item \code{\link{eBIC_allmodels}} (model selection)
+  \item \code{\link{threshold_allmodels}}
   \item \code{\link{fromeBICtoEstimation}}
   \item \code{\link{Estimation_allmodels}} (effects estimation)
 }

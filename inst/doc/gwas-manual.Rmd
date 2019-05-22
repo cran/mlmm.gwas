@@ -59,7 +59,7 @@ This package includes a dataset with genotypes, phenotypes and kinship for diffe
 ```
 
 ```{r matrixFormat, include=FALSE}
-    # Change le formatage par défaut des matrices
+    # Change le formatage par d??faut des matrices
     # On le met ici pour pas qu'il soit visible quand on fait ls() ci dessus
     knit_print.matrix <- function(x, ...){
         knitr::knit_print(as.data.frame(x), ...)
@@ -70,7 +70,7 @@ This package includes a dataset with genotypes, phenotypes and kinship for diffe
 
 Phenotypes must be put in a named vector. Names are the individuals' names and values their phenotypes.
 
-The trait included in the dataset is the flowering date in °C.day.
+The trait included in the dataset is the flowering date in ??C.day.
 
 ```{r floweringDateAD}
     head(floweringDateAD)
@@ -151,12 +151,16 @@ It is necessary to select a model using a criterion to avoid overfitting. The cr
 
 In this example, the model with `r which.min(res_eBIC[,"eBIC_0.5"])-1` fixed effect`r ifelse(which.min(res_eBIC[,"eBIC_0.5"])-1 >= 2, "s", "")` is selected.
 
+```{r threshold}
+    res_threshold <- threshold_allmodels(threshold=NULL, res_mlmm)
+```
+
 ## Estimation of the selected SNPs effects
 
 The selected SNPs effects can be estimated with the function `Estimation_allmodels`
 
 ```{r estimation}
-    sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC)
+    sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC, res_threshold)
     effects = Estimation_allmodels(floweringDateAD, sel_XXclass, list(K.add))
     
     effects
@@ -185,15 +189,17 @@ For convenience, all of the example command lines are compiled below:
     sel_XX = frommlmm_toebic(list(Xa), res_mlmm)
     res_eBIC = eBIC_allmodels(floweringDateAD, sel_XX, list(K.add), ncol(Xa))
     
-    sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC)
+    res_threshold <- threshold_allmodels(threshold=NULL, res_mlmm)
+    
+    sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC, res_threshold)
     effects = Estimation_allmodels(floweringDateAD, sel_XXclass, list(K.add))
     
     genotypes.boxplot(Xa, floweringDateAD, "SNP303", effects)
 ```
 
-You can also run the entire pipeline (without the figures plots) with the function `run_entire_gwas_pipeline`. This function runs internally the functions `mlmm_allmodels`, `frommlmm_toebic`, `eBIC_allmodels`, `fromeBICtoEstimation` and `Estimation_allmodels` and returns a list with the results of the mlmm, eBIC and effects estimation steps.
+You can also run the entire pipeline (without the figures plots) with the function `run_entire_gwas_pipeline`. This function runs internally the functions `mlmm_allmodels`, `frommlmm_toebic`, `eBIC_allmodels`, `threshold_allmodels`, `fromeBICtoEstimation` and `Estimation_allmodels` and returns a list with the results of the mlmm, eBIC and effects estimation steps.
 
 ```{r runEntirePipeline}
-    results = run_entire_gwas_pipeline(floweringDateAD, list(Xa), list(K.add))
+    results = run_entire_gwas_pipeline(floweringDateAD, list(Xa), list(K.add), threshold=NULL)
     names(results)
 ```

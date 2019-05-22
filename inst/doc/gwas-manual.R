@@ -10,7 +10,7 @@
     ls()
 
 ## ----matrixFormat, include=FALSE-----------------------------------------
-    # Change le formatage par défaut des matrices
+    # Change le formatage par d??faut des matrices
     # On le met ici pour pas qu'il soit visible quand on fait ls() ci dessus
     knit_print.matrix <- function(x, ...){
         knitr::knit_print(as.data.frame(x), ...)
@@ -42,8 +42,11 @@
     
     res_eBIC
 
+## ----threshold-----------------------------------------------------------
+    res_threshold <- threshold_allmodels(threshold=NULL, res_mlmm)
+
 ## ----estimation----------------------------------------------------------
-    sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC)
+    sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC, res_threshold)
     effects = Estimation_allmodels(floweringDateAD, sel_XXclass, list(K.add))
     
     effects
@@ -62,12 +65,14 @@
 #      sel_XX = frommlmm_toebic(list(Xa), res_mlmm)
 #      res_eBIC = eBIC_allmodels(floweringDateAD, sel_XX, list(K.add), ncol(Xa))
 #  
-#      sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC)
+#      res_threshold <- threshold_allmodels(threshold=NULL, res_mlmm)
+#  
+#      sel_XXclass = fromeBICtoEstimation(sel_XX, res_eBIC, res_threshold)
 #      effects = Estimation_allmodels(floweringDateAD, sel_XXclass, list(K.add))
 #  
 #      genotypes.boxplot(Xa, floweringDateAD, "SNP303", effects)
 
 ## ----runEntirePipeline---------------------------------------------------
-    results = run_entire_gwas_pipeline(floweringDateAD, list(Xa), list(K.add))
+    results = run_entire_gwas_pipeline(floweringDateAD, list(Xa), list(K.add), threshold=NULL)
     names(results)
 
