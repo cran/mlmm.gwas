@@ -15,7 +15,7 @@ colnames(res)=c("SNP","p-value","MLMM_Step")
 res
 
 for(i in 2:length(res_mlmm)){# identify the smallest p-value at each step
-# i=2
+# i=6
 if(i==2){
 if((min(res_mlmm[[i]])<threshold)==FALSE){print(paste0("No p-value below the threshold at step ",(i-1)));break}else{
 tab = res_mlmm[[i]][which(res_mlmm[[i]] == min(res_mlmm[[i]]))]

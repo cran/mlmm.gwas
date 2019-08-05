@@ -5,7 +5,7 @@
 \title{MLMM, model selection and effects estimation}
 \usage{
 run_entire_gwas_pipeline(Y, XX, KK, nbchunks = 2, maxsteps = 20,
-  cofs = NULL, female = NULL, male = NULL,threshold=NULL)
+  cofs = NULL, female = NULL, male = NULL,threshold=NULL,lambda=NULL)
 }
 \arguments{
 \item{Y}{A numeric named vector where the names are individuals' names and the values their phenotype. The names of Y will be matched to the row names of X.}
@@ -41,6 +41,8 @@ run_entire_gwas_pipeline(Y, XX, KK, nbchunks = 2, maxsteps = 20,
 \item{male}{A factor of levels male names and length n, only for the last two models}
 
 \item{threshold}{a value to declare the significant p value. The default value is Bonferroni 0.05}
+
+\item{lambda}{penalty used in the computation of the eBIC; if NULL, the default will be 1 - 1/(2k) with L=n^k where L=total number of SNPs (see function "lambda.calc")}
 }
 \value{
 A named list with 2 or 3 elements:

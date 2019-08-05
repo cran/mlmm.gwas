@@ -5,7 +5,7 @@
 \title{Compute eBIC and BIC criteria}
 \usage{
 eBIC_allmodels(Y, selec_XX, KK, nb.tests, cofs = NULL, female = NULL,
-  male = NULL)
+  male = NULL, lambda=NULL)
 }
 \arguments{
 \item{Y}{A numeric named vector where the names are individuals names and the values their phenotype.}
@@ -29,6 +29,8 @@ eBIC_allmodels(Y, selec_XX, KK, nb.tests, cofs = NULL, female = NULL,
 \item{female}{A factor of levels female names and length n, only for the last two models}
 
 \item{male}{A factor of levels male names and length n, only for the last two models}
+
+\item{lambda}{penalty used in the computation of the eBIC; if NULL, the default will be 1 - 1/(2k) with L=n^k where L=total number of SNPs (see function "lambda.calc")}
 }
 \value{
 A matrix with a line for each mlmm step and 4 columns : BIC, ajout, eBIC_0.5 and LogL.

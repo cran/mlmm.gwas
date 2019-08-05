@@ -580,7 +580,7 @@ mlmm_allmodels<-function(Y, XX, KK, nbchunks=2, maxsteps=20, cofs=NULL, female=N
 
     #
     for (i in 2:(maxsteps)) {
-        if (herit_fwd[[i-1]] < 0.01) break else {
+        if (i > 3 & herit_fwd[[i-1]] < 0.01) break else {
 
             list.Prep<-Prep.forRSS(i,InvV,Y,cof_fwd,n)
             RSS_H1.rank<-RSS.forSNP(i,list.Prep,nbchunks,XX)

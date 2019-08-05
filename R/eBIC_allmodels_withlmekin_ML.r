@@ -134,13 +134,14 @@ lambda.calc<-function(n,nb.tests){
 # with rownames()=individual names and with column names, forbidden head of column names for this matrix "eff1_"
 #' @param female A factor of levels female names and length n, only for the last two models
 #' @param male A factor of levels male names and length n, only for the last two models
+#' @param lambda penalty used in the computation of the eBIC; if NULL, the default will be 1 - 1/(2k) with L=n^k where L=total number of SNPs (see function "lambda.calc")
 #' @description Compute log likelihood, BIC and eBIC.
 #'
 #' The model with the smallest eBIC should be selected.
 #' @return A matrix with a line for each mlmm step and 4 columns : BIC, ajout, eBIC_0.5 and LogL.
 #' @template examples.donotrun
 #' @export
-eBIC_allmodels<-function(Y,selec_XX,KK,nb.tests,cofs=NULL,female=NULL,male=NULL) {
+eBIC_allmodels<-function(Y,selec_XX,KK,nb.tests,cofs=NULL,female=NULL,male=NULL,lambda=NULL) {
     #EDIT: adding special character support in marker names ( Olivier Guillaume 2018/07)
     for(ki in 1:length(selec_XX)) {
         stopifnot(anyDuplicated(colnames(selec_XX[[ki]])) == 0)
@@ -254,8 +255,10 @@ name.snp.col<-unlist(lapply(colnames(selec_XX[[1]]),function(xs){
 design<-cbind(X0,snp.design)
 colnames(design)<-c(colnames(X0),name.snp.col)
 
-  ## lambda choice changed by Prune and Brigitte 23.02.16
-  lambda<-lambda.calc(n,nb.tests)
+  if(is.null(lambda)){ ## edit by T. Flutre 16.07.19: possibility to pass lambda as arg
+    ## lambda choice changed by Prune and Brigitte 23.02.16
+    lambda<-lambda.calc(n,nb.tests)
+  }
   #
   fix<-ncol(X0)
   snp<-nb.effet*ncol(selec_XX[[1]])
@@ -292,6 +295,3 @@ rownames(result.eBIC) = ifelse( rownames(result.eBIC) %in% names(XX_mrk_names), 
 #end of function
 result.eBIC
 }
-
-
-
